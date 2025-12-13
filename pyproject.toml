@@ -1,0 +1,131 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "NeoS3Files"
+version = "1.0.0"
+description = "High-level async Python library for working with S3-compatible storage"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "Neosart Team", email = "ruslan@ruisvip.ru"}
+]
+maintainers = [
+    {name = "Ruslan Isaev", email = "ruslan@ruisvip.ru"}
+]
+keywords = [
+    "s3",
+    "aws",
+    "storage",
+    "async",
+    "minio",
+    "object-storage",
+    "cloud-storage"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet",
+    "Topic :: System :: Archiving",
+    "Framework :: AsyncIO",
+]
+
+dependencies = [
+    "aioboto3>=11.0.0",
+    "aiofiles>=23.0.0",
+    "botocore>=1.29.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/NeosartDevs/NeoS3Files"
+Documentation = "https://github.com/NeosartDevs/NeoS3Files#readme"
+Repository = "https://github.com/NeosartDevs/NeoS3Files.git"
+"Bug Tracker" = "https://github.com/NeosartDevs/NeoS3Files/issues"
+
+[tool.setuptools]
+py-modules = ["NeoS3Files"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["NeoS3Files*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = [
+    "tests",
+]
+asyncio_mode = "auto"
+
+[tool.black]
+line-length = 100
+target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.tox
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.coverage.run]
+source = ["NeoS3Files"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
