@@ -1,4 +1,3 @@
-```markdown
 # NeoS3Files Documentation
 
 ## Introduction
@@ -105,4 +104,4 @@ For any questions or feedback, feel free to reach out via GitHub Issues or Discu
 
 **Note:** This documentation serves both as README and reference guide for users. Additional examples can be found in the project's example folder.
 
-```
+
