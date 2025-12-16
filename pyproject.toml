@@ -10,7 +10,8 @@ readme = "README_ENG.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
 authors = [
-    { name = "Neosart Team", email = "ruslan@ruisvip.ru" }
+    { name = "Neosart Team", email = "ruslan@ruisvip.ru" },
+    { name = "C0dWiz", email = "c0dwiz@yandex.ru" }
 ]
 maintainers = [
     { name = "Ruslan Isaev", email = "ruslan@ruisvip.ru" }
