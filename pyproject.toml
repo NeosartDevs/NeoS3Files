@@ -67,9 +67,9 @@ Repository = "https://github.com/NeosartDevs/NeoS3Files.git"
 "Bug Tracker" = "https://github.com/NeosartDevs/NeoS3Files/issues"
 
 # --- setuptools configuration ---
-[tool.setuptools]
-py-modules = ["neos3files"]
-
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["neos3files*"]
 
 
 # --- black ---
