@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neos3files"
-version = "1.0.0"
+version = "2.0.0"
 description = "High-level async Python library for working with S3-compatible storage"
 readme = "README_ENG.md"
 requires-python = ">=3.7"
