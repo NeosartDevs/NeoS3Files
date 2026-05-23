@@ -24,17 +24,6 @@ NeoS3Files provides a convenient async interface for AWS S3, MinIO, and other S3
 pip install neos3files
 ```
 
-With development dependencies:
-
-```bash
-pip install neos3files[dev]
-```
-
-With test dependencies:
-
-```bash
-pip install neos3files[test]
-```
 
 ## Requirements
 

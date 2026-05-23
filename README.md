@@ -24,18 +24,6 @@ NeoS3Files предоставляет удобный асинхронный ин
 pip install neos3files
 ```
 
-Для установки с зависимостями для разработки:
-
-```bash
-pip install neos3files[dev]
-```
-
-Для установки с зависимостями для тестирования:
-
-```bash
-pip install neos3files[test]
-```
-
 ## Требования
 
 - Python 3.7+
