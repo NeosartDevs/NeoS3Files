@@ -1,8 +1,14 @@
+recursive-include neos3files *.py
+
 include README.md
 include README_ENG.md
 include LICENSE
 include pyproject.toml
-recursive-include examples *.py
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co]
-recursive-exclude * .DS_Store
+include requirements.txt
+include requirements-test.txt
+include MANIFEST.in
+
+recursive-include tests *.py
+
+global-exclude *.pyc
+global-exclude __pycache__/*

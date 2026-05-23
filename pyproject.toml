@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neos3files"
-version = "1.0.0"
+version = "2.0.0"
 description = "High-level async Python library for working with S3-compatible storage"
 readme = "README_ENG.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
 authors = [
-    { name = "Neosart Team", email = "ruslan@ruisvip.ru" }
+    { name = "Neosart Team", email = "ruslan@ruisvip.ru" },
+    { name = "C0dWiz", email = "c0dwiz@yandex.ru" }
 ]
 maintainers = [
     { name = "Ruslan Isaev", email = "ruslan@ruisvip.ru" }
@@ -67,9 +68,9 @@ Repository = "https://github.com/NeosartDevs/NeoS3Files.git"
 "Bug Tracker" = "https://github.com/NeosartDevs/NeoS3Files/issues"
 
 # --- setuptools configuration ---
-[tool.setuptools]
-py-modules = ["neos3files"]
-
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["neos3files*"]
 
 
 # --- black ---
@@ -120,3 +121,17 @@ exclude_lines = [
     "@(abc\\.)?abstractmethod",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--strict-markers",
+    "--strict-config",
+    "--asyncio-mode=auto"
+]
+markers = [
+    "integration: marks tests as integration tests (require external services)"
+]
