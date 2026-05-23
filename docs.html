@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoS3Files — Async S3 Library for Python</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent: #58a6ff;
+            --accent-hover: #79c0ff;
+            --green: #3fb950;
+            --orange: #d29922;
+            --red: #f85149;
+            --purple: #a371f7;
+            --code-bg: #1c2128;
+            --radius: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 24px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .sidebar-version {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            list-style: none;
+        }
+
+        .sidebar-nav li { margin-bottom: 2px; }
+
+        .sidebar-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            font-size: 0.9em;
+            transition: all 0.15s;
+        }
+
+        .sidebar-nav a:hover {
+            color: var(--text);
+            background: var(--bg-tertiary);
+        }
+
+        .sidebar-nav a.active {
+            color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .sidebar-section {
+            text-transform: uppercase;
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding: 16px 12px 6px;
+        }
+
+        .lang-switcher {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.15s;
+        }
+
+        .lang-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .lang-btn:hover:not(.active) {
+            border-color: var(--text-muted);
+            color: var(--text);
+        }
+
+        /* ── Main ── */
+        .main {
+            flex: 1;
+            max-width: 900px;
+            padding: 40px 60px;
+        }
+
+        .lang-content { display: none; }
+        .lang-content.active { display: block; }
+
+        h1 { font-size: 2.2em; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        h2 {
+            font-size: 1.6em;
+            font-weight: 600;
+            margin: 40px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            color: #f0f6fc;
+        }
+        h3 { font-size: 1.2em; font-weight: 600; margin: 28px 0 12px; color: #f0f6fc; }
+        h4 { font-size: 1em; font-weight: 600; margin: 20px 0 8px; color: #e6edf3; }
+        p { margin-bottom: 14px; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+        .hero {
+            padding: 32px 0 24px;
+            margin-bottom: 16px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .badge-python { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+        .badge-license { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+        .badge-version { background: rgba(210, 153, 34, 0.15); color: var(--orange); }
+        .badge-async { background: rgba(163, 113, 247, 0.15); color: var(--purple); }
+
+        /* ── Code ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            font-size: 0.88em;
+            line-height: 1.55;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', Consolas, monospace;
+            font-size: 0.9em;
+        }
+
+        :not(pre) > code {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        pre code {
+            color: var(--text);
+            background: none;
+            padding: 0;
+        }
+
+        /* Syntax highlighting */
+        .hl-comment { color: var(--text-muted); font-style: italic; }
+        .hl-string { color: #a5d6ff; }
+        .hl-keyword { color: #ff7b72; }
+        .hl-func { color: #d2a8ff; }
+        .hl-number { color: #79c0ff; }
+        .hl-decorator { color: #d2a8ff; }
+        .hl-builtin { color: #ffa657; }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: #f0f6fc;
+            background: var(--bg-tertiary);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        tr:hover td { background: var(--bg-tertiary); }
+
+        /* ── Admonitions ── */
+        .admonition {
+            border-left: 4px solid var(--accent);
+            background: rgba(88, 166, 255, 0.08);
+            padding: 12px 16px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin-bottom: 16px;
+            font-size: 0.9em;
+        }
+
+        .admonition.warning {
+            border-left-color: var(--orange);
+            background: rgba(210, 153, 34, 0.08);
+        }
+
+        .admonition.danger {
+            border-left-color: var(--red);
+            background: rgba(248, 81, 73, 0.08);
+        }
+
+        .admonition-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* ── Feature grid ── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+        }
+
+        .feature-card h4 {
+            margin: 0 0 8px;
+            color: var(--accent);
+            font-size: 0.95em;
+        }
+
+        .feature-card p {
+            margin: 0;
+            font-size: 0.88em;
+            color: var(--text-secondary);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { padding: 24px 20px; }
+        }
+
+        @media print {
+            .sidebar { display: none; }
+            .main { max-width: 100%; padding: 0; }
+            pre { border: 1px solid #ccc; background: #f5f5f5; }
+            body { color: #000; background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ────── Sidebar ────── -->
+<nav class="sidebar" id="sidebar">
+    <a href="#" class="sidebar-logo">NeoS3Files</a>
+    <div class="sidebar-version">v2.0.0</div>
+
+    <ul class="sidebar-nav">
+        <li class="sidebar-section" data-lang-ru>Начало</li>
+        <li class="sidebar-section" data-lang-en>Getting Started</li>
+        <li><a href="#overview" data-lang-ru>Обзор</a><a href="#overview" data-lang-en>Overview</a></li>
+        <li><a href="#installation" data-lang-ru>Установка</a><a href="#installation" data-lang-en>Installation</a></li>
+        <li><a href="#quickstart" data-lang-ru>Быстрый старт</a><a href="#quickstart" data-lang-en>Quick Start</a></li>
+
+        <li class="sidebar-section" data-lang-ru>Архитектура</li>
+        <li class="sidebar-section" data-lang-en>Architecture</li>
+        <li><a href="#architecture" data-lang-ru>Обзор архитектуры</a><a href="#architecture" data-lang-en>Overview</a></li>
+        <li><a href="#s3config" data-lang-ru>S3Config</a><a href="#s3config" data-lang-en>S3Config</a></li>
+        <li><a href="#s3manager" data-lang-ru>S3Manager</a><a href="#s3manager" data-lang-en>S3Manager</a></li>
+        <li><a href="#s3client" data-lang-ru>S3Client</a><a href="#s3client" data-lang-en>S3Client</a></li>
+
+        <li class="sidebar-section" data-lang-ru>Модели данных</li>
+        <li class="sidebar-section" data-lang-en>Data Models</li>
+        <li><a href="#fileinfo">FileInfo</a></li>
+        <li><a href="#uploadprogress">UploadProgress</a></li>
+        <li><a href="#usagestats">UsageStats</a></li>
+        <li><a href="#storageclass">StorageClass</a></li>
+
+        <li class="sidebar-section" data-lang-ru>Ошибки</li>
+        <li class="sidebar-section" data-lang-en>Exceptions</li>
+        <li><a href="#exceptions" data-lang-ru>Иерархия исключений</a><a href="#exceptions" data-lang-en>Exception Hierarchy</a></li>
+
+        <li class="sidebar-section" data-lang-ru>Утилиты</li>
+        <li class="sidebar-section" data-lang-en>Utilities</li>
+        <li><a href="#utilities" data-lang-ru>Вспомогательные функции</a><a href="#utilities" data-lang-en>Helper Functions</a></li>
+
+        <li class="sidebar-section" data-lang-ru>Разное</li>
+        <li class="sidebar-section" data-lang-en>Misc</li>
+        <li><a href="#providers" data-lang-ru>Поддерживаемые хранилища</a><a href="#providers" data-lang-en>Supported Providers</a></li>
+        <li><a href="#development" data-lang-ru>Разработка</a><a href="#development" data-lang-en>Development</a></li>
+    </ul>
+
+    <div class="lang-switcher">
+        <button class="lang-btn active" onclick="switchLang('ru')" id="btn-ru">Русский</button>
+        <button class="lang-btn" onclick="switchLang('en')" id="btn-en">English</button>
+    </div>
+</nav>
+
+<!-- ────── Main Content ────── -->
+<main class="main">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- RUSSIAN CONTENT                           -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="lang-content active" id="content-ru">
+
+        <!-- Hero -->
+        <div class="hero">
+            <h1>NeoS3Files</h1>
+            <p class="hero-subtitle">Высокоуровневая асинхронная Python-библиотека для работы с S3-совместимыми хранилищами</p>
+            <div class="badges">
+                <span class="badge badge-python">Python 3.7+</span>
+                <span class="badge badge-license">MIT License</span>
+                <span class="badge badge-version">v2.0.0</span>
+                <span class="badge badge-async">AsyncIO</span>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>Полностью асинхронный API</h4>
+                <p>Все операции ввода-вывода неблокирующие, построены на asyncio, aioboto3 и aiofiles.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Автоматическая загрузка частями</h4>
+                <p>Большие файлы автоматически разбиваются на части и загружаются параллельно с контролем конкурентности.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Отслеживание прогресса</h4>
+                <p>Колбэки для мониторинга прогресса загрузки с информацией о завершённых частях и процентах.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Пул соединений</h4>
+                <p>Автоматическое переиспользование HTTP-соединений для максимальной производительности.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Типизированные исключения</h4>
+                <p>Детальная иерархия исключений для всех видов ошибок S3 с сохранением исходной ошибки.</p>
+            </div>
+            <div class="feature-card">
+                <h4>S3-совместимые хранилища</h4>
+                <p>Работает с AWS S3, MinIO, DigitalOcean Spaces, Яндекс.Облаком, VK Cloud и другими.</p>
+            </div>
+        </div>
+
+        <!-- Installation -->
+        <h2 id="installation">Установка</h2>
+
+        <pre><code>pip install neos3files</code></pre>
+
+        <p>С зависимостями для разработки:</p>
+        <pre><code>pip install neos3files[dev]</code></pre>
+
+        <p>С зависимостями для тестирования:</p>
+        <pre><code>pip install neos3files[test]</code></pre>
+
+        <h3>Зависимости</h3>
+        <table>
+            <tr><th>Пакет</th><th>Версия</th><th>Назначение</th></tr>
+            <tr><td><code>aioboto3</code></td><td>&ge; 11.0.0</td><td>Асинхронный клиент AWS S3</td></tr>
+            <tr><td><code>aiofiles</code></td><td>&ge; 23.0.0</td><td>Асинхронные файловые операции</td></tr>
+            <tr><td><code>botocore</code></td><td>&ge; 1.29.0</td><td>Базовая библиотека AWS SDK</td></tr>
+        </table>
+
+        <!-- Quick Start -->
+        <h2 id="quickstart">Быстрый старт</h2>
+
+        <pre><code><span class="hl-keyword">import</span> asyncio
+<span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> S3Config, S3Manager
+
+<span class="hl-keyword">async def</span> <span class="hl-func">main</span>():
+    <span class="hl-comment"># Конфигурация подключения</span>
+    config = S3Config(
+        endpoint_url=<span class="hl-string">"https://s3.example.com"</span>,
+        bucket=<span class="hl-string">"my-bucket"</span>,
+        access_key=<span class="hl-string">"your-access-key"</span>,
+        secret_key=<span class="hl-string">"your-secret-key"</span>,
+    )
+
+    <span class="hl-keyword">async with</span> S3Manager(config) <span class="hl-keyword">as</span> manager:
+        <span class="hl-comment"># Загрузка файла</span>
+        info = <span class="hl-keyword">await</span> manager.upload_file(
+            <span class="hl-string">"local_file.txt"</span>, <span class="hl-string">"remote/file.txt"</span>
+        )
+        <span class="hl-builtin">print</span>(<span class="hl-string">f"Загружен: </span><span class="hl-special">{info.key}</span><span class="hl-string">, </span><span class="hl-special">{info.size_mb}</span><span class="hl-string"> МБ"</span>)
+
+        <span class="hl-comment"># Проверка существования</span>
+        exists = <span class="hl-keyword">await</span> manager.exists(<span class="hl-string">"remote/file.txt"</span>)
+
+        <span class="hl-comment"># Скачивание</span>
+        <span class="hl-keyword">await</span> manager.download_file(<span class="hl-string">"remote/file.txt"</span>, <span class="hl-string">"downloaded.txt"</span>)
+
+        <span class="hl-comment"># Копирование и перемещение</span>
+        <span class="hl-keyword">await</span> manager.copy_file(<span class="hl-string">"remote/file.txt"</span>, <span class="hl-string">"remote/backup.txt"</span>)
+        <span class="hl-keyword">await</span> manager.move_file(<span class="hl-string">"remote/file.txt"</span>, <span class="hl-string">"archive/file.txt"</span>)
+
+        <span class="hl-comment"># Удаление</span>
+        <span class="hl-keyword">await</span> manager.delete_file(<span class="hl-string">"remote/backup.txt"</span>)
+
+asyncio.run(main())</code></pre>
+
+        <!-- Architecture -->
+        <h2 id="architecture">Архитектура</h2>
+
+        <p>Библиотека состоит из двух основных слоёв, разделяющих низкоуровневые операции и высокоуровневые абстракции:</p>
+
+        <table>
+            <tr><th>Компонент</th><th>Уровень</th><th>Назначение</th></tr>
+            <tr>
+                <td><code>S3Client</code></td>
+                <td>Низкий</td>
+                <td>Асинхронный клиент S3 с пулом соединений. Предоставляет прямой доступ к API S3: head_object, put_object, delete_object, copy_object, list_objects, multipart upload.</td>
+            </tr>
+            <tr>
+                <td><code>S3Manager</code></td>
+                <td>Высокий</td>
+                <td>Менеджер с автоматической многокомпонентной загрузкой, отслеживанием прогресса, пакетными операциями и статистикой использования.</td>
+            </tr>
+        </table>
+
+        <h2 id="s3config">S3Config</h2>
+
+        <p>Конфигурация подключения к S3-хранилищу. Содержит все параметры, необходимые для установки соединения.</p>
+
+        <table>
+            <tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr>
+            <tr><td><code>endpoint_url</code></td><td><code>str</code></td><td>—</td><td>URL S3-совместимого хранилища</td></tr>
+            <tr><td><code>bucket</code></td><td><code>str</code></td><td>—</td><td>Имя бакета</td></tr>
+            <tr><td><code>access_key</code></td><td><code>str</code></td><td>—</td><td>Ключ доступа (Access Key ID)</td></tr>
+            <tr><td><code>secret_key</code></td><td><code>str</code></td><td>—</td><td>Секретный ключ (Secret Access Key)</td></tr>
+            <tr><td><code>region</code></td><td><code>Optional[str]</code></td><td><code>None</code></td><td>Регион AWS (по умолчанию us-east-1)</td></tr>
+            <tr><td><code>verify_ssl</code></td><td><code>bool</code></td><td><code>True</code></td><td>Проверка SSL-сертификатов</td></tr>
+            <tr><td><code>timeout</code></td><td><code>int</code></td><td><code>30</code></td><td>Таймаут соединения и чтения (сек)</td></tr>
+            <tr><td><code>max_pool_connections</code></td><td><code>int</code></td><td><code>10</code></td><td>Максимальное число соединений в пуле</td></tr>
+        </table>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> S3Config
+
+<span class="hl-comment"># Стандартное создание</span>
+config = S3Config(
+    endpoint_url=<span class="hl-string">"https://s3.example.com"</span>,
+    bucket=<span class="hl-string">"my-bucket"</span>,
+    access_key=<span class="hl-string">"AKIAIOSFODNN7EXAMPLE"</span>,
+    secret_key=<span class="hl-string">"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"</span>,
+    region=<span class="hl-string">"us-west-2"</span>,
+)
+
+<span class="hl-comment"># Создание из словаря</span>
+config = S3Config.from_dict({
+    <span class="hl-string">"endpoint_url"</span>: <span class="hl-string">"https://s3.example.com"</span>,
+    <span class="hl-string">"bucket"</span>: <span class="hl-string">"my-bucket"</span>,
+    <span class="hl-string">"access_key"</span>: <span class="hl-string">"key"</span>,
+    <span class="hl-string">"secret_key"</span>: <span class="hl-string">"secret"</span>,
+})
+
+<span class="hl-comment"># Экспорт в словарь</span>
+d = config.to_dict()</code></pre>
+
+        <!-- S3Manager -->
+        <h2 id="s3manager">S3Manager</h2>
+
+        <p>Высокоуровневый интерфейс для повседневных операций с S3. Автоматически определяет, когда использовать однокомпонентную или многокомпонентную загрузку.</p>
+
+        <h4>Параметры конструктора</h4>
+        <table>
+            <tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr>
+            <tr><td><code>config</code></td><td><code>S3Config</code></td><td>—</td><td>Конфигурация подключения</td></tr>
+            <tr><td><code>chunk_size</code></td><td><code>int</code></td><td><code>52428800</code> (50 МБ)</td><td>Размер части для многокомпонентной загрузки</td></tr>
+            <tr><td><code>max_concurrent_uploads</code></td><td><code>int</code></td><td><code>5</code></td><td>Максимум одновременных загрузок частей</td></tr>
+        </table>
+
+        <h3>Загрузка с отслеживанием прогресса</h3>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> UploadProgress
+
+<span class="hl-keyword">def</span> <span class="hl-func">on_progress</span>(progress: UploadProgress):
+    <span class="hl-builtin">print</span>(
+        <span class="hl-string">f"</span><span class="hl-special">{progress.key}</span><span class="hl-string">: </span><span class="hl-special">{progress.progress_percent}</span><span class="hl-string">% "
+        f"(часть </span><span class="hl-special">{progress.completed_parts}</span><span class="hl-string">/</span><span class="hl-special">{progress.total_parts}</span><span class="hl-string">)"</span>
+    )
+
+info = <span class="hl-keyword">await</span> manager.upload_file(
+    <span class="hl-string">"large_video.mp4"</span>,
+    <span class="hl-string">"videos/video.mp4"</span>,
+    content_type=<span class="hl-string">"video/mp4"</span>,
+    metadata={<span class="hl-string">"author"</span>: <span class="hl-string">"user123"</span>},
+    progress_callback=on_progress,
+)</code></pre>
+
+        <h3>Список файлов</h3>
+
+        <pre><code><span class="hl-comment"># Все файлы</span>
+<span class="hl-keyword">async for</span> f <span class="hl-keyword">in</span> manager.list_files():
+    <span class="hl-builtin">print</span>(<span class="hl-string">f"</span><span class="hl-special">{f.key}</span><span class="hl-string">: </span><span class="hl-special">{f.size_mb}</span><span class="hl-string"> МБ"</span>)
+
+<span class="hl-comment"># С фильтрацией и лимитом</span>
+<span class="hl-keyword">async for</span> f <span class="hl-keyword">in</span> manager.list_files(prefix=<span class="hl-string">"photos/"</span>, recursive=<span class="hl-builtin">False</span>, limit=<span class="hl-number">100</span>):
+    <span class="hl-builtin">print</span>(f.key)</code></pre>
+
+        <h3>Массовое удаление</h3>
+
+        <pre><code>keys = [<span class="hl-string">"f1.txt"</span>, <span class="hl-string">"f2.txt"</span>, <span class="hl-string">"f3.txt"</span>]
+deleted = <span class="hl-keyword">await</span> manager.delete_files(keys)
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Удалено: </span><span class="hl-special">{deleted}</span><span class="hl-string">"</span>)</code></pre>
+
+        <h3>Статистика использования</h3>
+
+        <pre><code>stats = <span class="hl-keyword">await</span> manager.get_usage_stats()
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Файлов: </span><span class="hl-special">{stats.total_files}</span><span class="hl-string">"</span>)
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Общий размер: </span><span class="hl-special">{stats.total_size_gb}</span><span class="hl-string"> ГБ"</span>)
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Средний размер: </span><span class="hl-special">{stats.avg_file_size_mb}</span><span class="hl-string"> МБ"</span>)</code></pre>
+
+        <h3>Очистка бакета</h3>
+
+        <div class="admonition danger">
+            <div class="admonition-title">Внимание: необратимая операция</div>
+            Удаляет все объекты и незавершённые многокомпонентные загрузки из бакета.
+        </div>
+
+        <pre><code>deleted = <span class="hl-keyword">await</span> manager.purge()
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Удалено объектов: </span><span class="hl-special">{deleted}</span><span class="hl-string">"</span>)</code></pre>
+
+        <!-- S3Client -->
+        <h2 id="s3client">S3Client</h2>
+
+        <p>Низкоуровневый клиент для прямых операций с S3 API. Предоставляет полный контроль над всеми аспектами взаимодействия с хранилищем.</p>
+
+        <h3>Ручная многокомпонентная загрузка</h3>
+
+        <pre><code><span class="hl-keyword">async with</span> S3Client(config) <span class="hl-keyword">as</span> client:
+    <span class="hl-comment"># Инициализация</span>
+    upload = <span class="hl-keyword">await</span> client.create_multipart_upload(<span class="hl-string">"large.bin"</span>)
+    upload_id = upload[<span class="hl-string">"UploadId"</span>]
+
+    <span class="hl-comment"># Загрузка частей</span>
+    parts = []
+    <span class="hl-keyword">for</span> i, chunk <span class="hl-keyword">in</span> <span class="hl-builtin">enumerate</span>(chunks, <span class="hl-number">1</span>):
+        result = <span class="hl-keyword">await</span> client.upload_part(
+            <span class="hl-string">"large.bin"</span>, upload_id, i, chunk
+        )
+        parts.append({<span class="hl-string">"PartNumber"</span>: i, <span class="hl-string">"ETag"</span>: result[<span class="hl-string">"ETag"</span>]})
+
+    <span class="hl-comment"># Завершение</span>
+    <span class="hl-keyword">await</span> client.complete_multipart_upload(<span class="hl-string">"large.bin"</span>, upload_id, parts)</code></pre>
+
+        <h3>Методы S3Client</h3>
+
+        <table>
+            <tr><th>Метод</th><th>Описание</th></tr>
+            <tr><td><code>head_object(key)</code></td><td>Метаданные объекта без скачивания</td></tr>
+            <tr><td><code>list_objects(prefix, delimiter, max_keys)</code></td><td>Список объектов с пагинацией (async generator)</td></tr>
+            <tr><td><code>put_object(key, body, content_type, metadata)</code></td><td>Загрузка объекта одной операцией</td></tr>
+            <tr><td><code>download_fileobj(key, fileobj)</code></td><td>Потоковое скачивание в файловый объект</td></tr>
+            <tr><td><code>delete_object(key)</code></td><td>Удаление объекта</td></tr>
+            <tr><td><code>copy_object(source_key, dest_key)</code></td><td>Копирование внутри бакета</td></tr>
+            <tr><td><code>create_multipart_upload(key, ...)</code></td><td>Инициализация многокомпонентной загрузки</td></tr>
+            <tr><td><code>upload_part(key, upload_id, part_number, body)</code></td><td>Загрузка одной части</td></tr>
+            <tr><td><code>complete_multipart_upload(key, upload_id, parts)</code></td><td>Завершение многокомпонентной загрузки</td></tr>
+            <tr><td><code>abort_multipart_upload(key, upload_id)</code></td><td>Отмена многокомпонентной загрузки</td></tr>
+        </table>
+
+        <!-- Data Models -->
+        <h2 id="fileinfo">FileInfo</h2>
+
+        <p>Содержит метаданные объекта S3, полученные через <code>head_object</code> или <code>list_objects</code>.</p>
+
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td><code>key</code></td><td><code>str</code></td><td>Ключ (путь) объекта в S3</td></tr>
+            <tr><td><code>size</code></td><td><code>int</code></td><td>Размер файла в байтах</td></tr>
+            <tr><td><code>last_modified</code></td><td><code>datetime</code></td><td>Дата и время последнего изменения</td></tr>
+            <tr><td><code>etag</code></td><td><code>str</code></td><td>ETag объекта (без кавычек)</td></tr>
+            <tr><td><code>storage_class</code></td><td><code>Optional[StorageClass]</code></td><td>Класс хранения</td></tr>
+            <tr><td><code>content_type</code></td><td><code>Optional[str]</code></td><td>MIME-тип</td></tr>
+            <tr><td><code>metadata</code></td><td><code>Dict[str, str]</code></td><td>Пользовательские метаданные</td></tr>
+        </table>
+
+        <h4>Вычисляемые свойства</h4>
+        <table>
+            <tr><th>Свойство</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td><code>size_mb</code></td><td><code>float</code></td><td>Размер в мегабайтах</td></tr>
+            <tr><td><code>size_gb</code></td><td><code>float</code></td><td>Размер в гигабайтах</td></tr>
+            <tr><td><code>filename</code></td><td><code>str</code></td><td>Имя файла (последний компонент пути)</td></tr>
+            <tr><td><code>directory</code></td><td><code>str</code></td><td>Путь к директории (все компоненты кроме имени файла)</td></tr>
+        </table>
+
+        <h2 id="uploadprogress">UploadProgress</h2>
+
+        <p>Передаётся в <code>progress_callback</code> при загрузке файлов.</p>
+
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td><code>key</code></td><td><code>str</code></td><td>Ключ загружаемого объекта</td></tr>
+            <tr><td><code>total_size</code></td><td><code>int</code></td><td>Общий размер файла в байтах</td></tr>
+            <tr><td><code>uploaded_size</code></td><td><code>int</code></td><td>Загружено байт на данный момент</td></tr>
+            <tr><td><code>completed_parts</code></td><td><code>int</code></td><td>Количество завершённых частей</td></tr>
+            <tr><td><code>total_parts</code></td><td><code>int</code></td><td>Общее количество частей</td></tr>
+            <tr><td><code>progress_percent</code></td><td><code>float</code></td><td>Процент выполнения (0.0–100.0)</td></tr>
+        </table>
+
+        <h2 id="usagestats">UsageStats</h2>
+
+        <p>Агрегированная статистика использования бакета.</p>
+
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td><code>total_files</code></td><td><code>int</code></td><td>Общее количество файлов</td></tr>
+            <tr><td><code>total_size_bytes</code></td><td><code>int</code></td><td>Общий размер в байтах</td></tr>
+            <tr><td><code>total_size_gb</code></td><td><code>float</code></td><td>Общий размер в ГБ</td></tr>
+            <tr><td><code>total_size_mb</code></td><td><code>float</code></td><td>Общий размер в МБ</td></tr>
+            <tr><td><code>avg_file_size_mb</code></td><td><code>float</code></td><td>Средний размер файла в МБ</td></tr>
+            <tr><td><code>by_storage_class</code></td><td><code>Dict[StorageClass, int]</code></td><td>Количество файлов по классам хранения</td></tr>
+        </table>
+
+        <h2 id="storageclass">StorageClass</h2>
+
+        <table>
+            <tr><th>Значение</th><th>Описание</th></tr>
+            <tr><td><code>STANDARD</code></td><td>Стандартное хранение — для часто используемых данных</td></tr>
+            <tr><td><code>STANDARD_IA</code></td><td>Редкий доступ — для данных, запрашиваемых нечасто</td></tr>
+            <tr><td><code>GLACIER</code></td><td>Архивное хранение — восстановление от минут до часов</td></tr>
+            <tr><td><code>DEEP_ARCHIVE</code></td><td>Глубокий архив — самое дешёвое хранение, восстановление от часов</td></tr>
+            <tr><td><code>INTELLIGENT_TIERING</code></td><td>Автоматический выбор класса на основе паттернов доступа</td></tr>
+        </table>
+
+        <!-- Exceptions -->
+        <h2 id="exceptions">Исключения</h2>
+
+        <p>Все исключения наследуются от <code>S3Error</code>. Каждое исключение имеет атрибут <code>message</code> с описанием и опциональный <code>original_error</code> с исходным исключением.</p>
+
+        <table>
+            <tr><th>Исключение</th><th>Родитель</th><th>Когда возникает</th></tr>
+            <tr><td><code>S3Error</code></td><td><code>Exception</code></td><td>Базовое исключение для всех ошибок S3</td></tr>
+            <tr><td><code>S3ConnectionError</code></td><td><code>S3Error</code></td><td>Ошибка подключения к S3-сервису</td></tr>
+            <tr><td><code>S3UploadError</code></td><td><code>S3Error</code></td><td>Ошибка загрузки файла (содержит атрибут <code>key</code>)</td></tr>
+            <tr><td><code>S3DownloadError</code></td><td><code>S3Error</code></td><td>Ошибка скачивания файла (содержит атрибут <code>key</code>)</td></tr>
+            <tr><td><code>S3FileNotFoundError</code></td><td><code>S3Error</code></td><td>Файл не найден в бакете</td></tr>
+            <tr><td><code>S3BucketNotFoundError</code></td><td><code>S3Error</code></td><td>Бакет не найден</td></tr>
+            <tr><td><code>S3PermissionError</code></td><td><code>S3Error</code></td><td>Недостаточно прав для операции</td></tr>
+            <tr><td><code>S3ConfigurationError</code></td><td><code>S3Error</code></td><td>Неверная конфигурация подключения</td></tr>
+        </table>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> (
+    S3FileNotFoundError, S3PermissionError,
+    S3ConnectionError, S3Error,
+)
+
+<span class="hl-keyword">try</span>:
+    info = <span class="hl-keyword">await</span> manager.get_file_info(<span class="hl-string">"important.txt"</span>)
+<span class="hl-keyword">except</span> S3FileNotFoundError:
+    <span class="hl-builtin">print</span>(<span class="hl-string">"Файл не найден"</span>)
+<span class="hl-keyword">except</span> S3PermissionError:
+    <span class="hl-builtin">print</span>(<span class="hl-string">"Нет доступа"</span>)
+<span class="hl-keyword">except</span> S3ConnectionError:
+    <span class="hl-builtin">print</span>(<span class="hl-string">"Ошибка подключения"</span>)
+<span class="hl-keyword">except</span> S3Error <span class="hl-keyword">as</span> e:
+    <span class="hl-builtin">print</span>(<span class="hl-string">f"Ошибка: </span><span class="hl-special">{e.message}</span><span class="hl-string">"</span>)</code></pre>
+
+        <!-- Utilities -->
+        <h2 id="utilities">Утилиты</h2>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> (
+    sanitize_filename,
+    parse_s3_url,
+    build_s3_url,
+    format_size,
+)
+
+<span class="hl-comment"># Очистка имени файла</span>
+<span class="hl-builtin">print</span>(sanitize_filename(<span class="hl-string">"мой файл (1).txt"</span>))
+<span class="hl-comment"># => "мой_файл_1.txt"</span>
+
+<span class="hl-comment"># Парсинг s3:// URL</span>
+bucket, key = parse_s3_url(<span class="hl-string">"s3://my-bucket/path/file.txt"</span>)
+<span class="hl-comment"># => ("my-bucket", "path/file.txt")</span>
+
+<span class="hl-comment"># Парсинг HTTPS URL</span>
+bucket, key = parse_s3_url(<span class="hl-string">"https://s3.amazonaws.com/bucket/key.txt"</span>)
+<span class="hl-comment"># => ("bucket", "key.txt")</span>
+
+<span class="hl-comment"># Построение URL</span>
+url = build_s3_url(<span class="hl-string">"my-bucket"</span>, <span class="hl-string">"folder/file.txt"</span>)
+<span class="hl-comment"># => "s3://my-bucket/folder/file.txt"</span>
+
+url = build_s3_url(<span class="hl-string">"my-bucket"</span>, <span class="hl-string">"f.txt"</span>, <span class="hl-string">"https://s3.example.com"</span>)
+<span class="hl-comment"># => "https://s3.example.com/my-bucket/f.txt"</span>
+
+<span class="hl-comment"># Форматирование размера</span>
+<span class="hl-builtin">print</span>(format_size(<span class="hl-number">1024</span>))       <span class="hl-comment"># "1.00 KB"</span>
+<span class="hl-builtin">print</span>(format_size(<span class="hl-number">1073741824</span>)) <span class="hl-comment"># "1.00 GB"</span></code></pre>
+
+        <!-- Supported Providers -->
+        <h2 id="providers">Поддерживаемые хранилища</h2>
+
+        <p>Библиотека работает с любыми S3-совместимыми хранилищами:</p>
+
+        <table>
+            <tr><th>Провайдер</th><th>Пример endpoint_url</th></tr>
+            <tr><td>AWS S3</td><td><code>https://s3.amazonaws.com</code></td></tr>
+            <tr><td>MinIO</td><td><code>https://minio.example.com</code></td></tr>
+            <tr><td>DigitalOcean Spaces</td><td><code>https://nyc3.digitaloceanspaces.com</code></td></tr>
+            <tr><td>Яндекс.Облако</td><td><code>https://storage.yandexcloud.net</code></td></tr>
+            <tr><td>VK Cloud</td><td><code>https://hb.bizmrg.com</code></td></tr>
+            <tr><td>Selectel</td><td><code>https://s3.selcdn.ru</code></td></tr>
+            <tr><td>Ceph (RADOS Gateway)</td><td><code>https://ceph.example.com</code></td></tr>
+        </table>
+
+        <!-- Development -->
+        <h2 id="development">Разработка</h2>
+
+        <pre><code><span class="hl-comment"># Клонирование</span>
+git clone https://github.com/NeosartDevs/NeoS3Files.git
+<span class="hl-builtin">cd</span> NeoS3Files
+
+<span class="hl-comment"># Установка в режиме разработки</span>
+pip install -e .[dev]
+
+<span class="hl-comment"># Запуск тестов</span>
+pytest
+
+<span class="hl-comment"># Тесты с покрытием</span>
+pytest --cov=neos3files --cov-report=html
+
+<span class="hl-comment"># Форматирование</span>
+black neos3files tests
+
+<span class="hl-comment"># Проверка типов</span>
+mypy neos3files</code></pre>
+
+        <p style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--text-muted);">
+            NeoS3Files &copy; 2025 Neosart Team. MIT License.
+            <br><a href="https://github.com/NeosartDevs/NeoS3Files">GitHub</a> &middot;
+            <a href="https://pypi.org/project/neos3files/">PyPI</a> &middot;
+            <a href="https://github.com/NeosartDevs/NeoS3Files/issues">Баг-трекер</a>
+        </p>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- ENGLISH CONTENT                          -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="lang-content" id="content-en">
+
+        <!-- Hero -->
+        <div class="hero">
+            <h1>NeoS3Files</h1>
+            <p class="hero-subtitle">A high-level async Python library for working with S3-compatible storage</p>
+            <div class="badges">
+                <span class="badge badge-python">Python 3.7+</span>
+                <span class="badge badge-license">MIT License</span>
+                <span class="badge badge-version">v2.0.0</span>
+                <span class="badge badge-async">AsyncIO</span>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>Fully Async API</h4>
+                <p>All I/O operations are non-blocking, built on asyncio, aioboto3, and aiofiles.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Automatic Multipart Uploads</h4>
+                <p>Large files are automatically split into parts and uploaded concurrently with controlled parallelism.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Progress Tracking</h4>
+                <p>Callbacks to monitor upload progress with completed parts count and percentage information.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Connection Pooling</h4>
+                <p>Automatic HTTP connection reuse for maximum throughput and reduced latency.</p>
+            </div>
+            <div class="feature-card">
+                <h4>Typed Exceptions</h4>
+                <p>Fine-grained exception hierarchy for all S3 error types, preserving the original error context.</p>
+            </div>
+            <div class="feature-card">
+                <h4>S3-Compatible Storage</h4>
+                <p>Works with AWS S3, MinIO, DigitalOcean Spaces, Yandex Cloud, VK Cloud, and more.</p>
+            </div>
+        </div>
+
+        <!-- Installation -->
+        <h2 id="installation">Installation</h2>
+
+        <pre><code>pip install neos3files</code></pre>
+
+        <p>With development dependencies:</p>
+        <pre><code>pip install neos3files[dev]</code></pre>
+
+        <p>With test dependencies:</p>
+        <pre><code>pip install neos3files[test]</code></pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Package</th><th>Version</th><th>Purpose</th></tr>
+            <tr><td><code>aioboto3</code></td><td>&ge; 11.0.0</td><td>Async AWS S3 client</td></tr>
+            <tr><td><code>aiofiles</code></td><td>&ge; 23.0.0</td><td>Async file operations</td></tr>
+            <tr><td><code>botocore</code></td><td>&ge; 1.29.0</td><td>Core AWS SDK library</td></tr>
+        </table>
+
+        <!-- Quick Start -->
+        <h2 id="quickstart">Quick Start</h2>
+
+        <pre><code><span class="hl-keyword">import</span> asyncio
+<span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> S3Config, S3Manager
+
+<span class="hl-keyword">async def</span> <span class="hl-func">main</span>():
+    <span class="hl-comment"># Connection configuration</span>
+    config = S3Config(
+        endpoint_url=<span class="hl-string">"https://s3.example.com"</span>,
+        bucket=<span class="hl-string">"my-bucket"</span>,
+        access_key=<span class="hl-string">"your-access-key"</span>,
+        secret_key=<span class="hl-string">"your-secret-key"</span>,
+    )
+
+    <span class="hl-keyword">async with</span> S3Manager(config) <span class="hl-keyword">as</span> manager:
+        <span class="hl-comment"># Upload a file</span>
+        info = <span class="hl-keyword">await</span> manager.upload_file(
+            <span class="hl-string">"local_file.txt"</span>, <span class="hl-string">"remote/file.txt"</span>
+        )
+        <span class="hl-builtin">print</span>(<span class="hl-string">f"Uploaded: </span><span class="hl-special">{info.key}</span><span class="hl-string">, </span><span class="hl-special">{info.size_mb}</span><span class="hl-string"> MB"</span>)
+
+        <span class="hl-comment"># Check existence</span>
+        exists = <span class="hl-keyword">await</span> manager.exists(<span class="hl-string">"remote/file.txt"</span>)
+
+        <span class="hl-comment"># Download</span>
+        <span class="hl-keyword">await</span> manager.download_file(<span class="hl-string">"remote/file.txt"</span>, <span class="hl-string">"downloaded.txt"</span>)
+
+        <span class="hl-comment"># Copy and move</span>
+        <span class="hl-keyword">await</span> manager.copy_file(<span class="hl-string">"remote/file.txt"</span>, <span class="hl-string">"remote/backup.txt"</span>)
+        <span class="hl-keyword">await</span> manager.move_file(<span class="hl-string">"remote/file.txt"</span>, <span class="hl-string">"archive/file.txt"</span>)
+
+        <span class="hl-comment"># Delete</span>
+        <span class="hl-keyword">await</span> manager.delete_file(<span class="hl-string">"remote/backup.txt"</span>)
+
+asyncio.run(main())</code></pre>
+
+        <!-- Architecture -->
+        <h2 id="architecture">Architecture</h2>
+
+        <p>The library consists of two main layers, separating low-level operations from high-level abstractions:</p>
+
+        <table>
+            <tr><th>Component</th><th>Level</th><th>Purpose</th></tr>
+            <tr>
+                <td><code>S3Client</code></td>
+                <td>Low</td>
+                <td>Async S3 client with connection pooling. Provides direct access to the S3 API: head_object, put_object, delete_object, copy_object, list_objects, multipart upload.</td>
+            </tr>
+            <tr>
+                <td><code>S3Manager</code></td>
+                <td>High</td>
+                <td>Manager with automatic multipart uploads, progress tracking, batch operations, and usage statistics.</td>
+            </tr>
+        </table>
+
+        <h2 id="s3config">S3Config</h2>
+
+        <p>Connection configuration for S3 storage. Contains all parameters needed to establish a connection.</p>
+
+        <table>
+            <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr>
+            <tr><td><code>endpoint_url</code></td><td><code>str</code></td><td>—</td><td>S3-compatible storage endpoint URL</td></tr>
+            <tr><td><code>bucket</code></td><td><code>str</code></td><td>—</td><td>Bucket name</td></tr>
+            <tr><td><code>access_key</code></td><td><code>str</code></td><td>—</td><td>Access Key ID</td></tr>
+            <tr><td><code>secret_key</code></td><td><code>str</code></td><td>—</td><td>Secret Access Key</td></tr>
+            <tr><td><code>region</code></td><td><code>Optional[str]</code></td><td><code>None</code></td><td>AWS region (defaults to us-east-1)</td></tr>
+            <tr><td><code>verify_ssl</code></td><td><code>bool</code></td><td><code>True</code></td><td>Verify SSL certificates</td></tr>
+            <tr><td><code>timeout</code></td><td><code>int</code></td><td><code>30</code></td><td>Connection and read timeout (seconds)</td></tr>
+            <tr><td><code>max_pool_connections</code></td><td><code>int</code></td><td><code>10</code></td><td>Maximum connections in pool</td></tr>
+        </table>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> S3Config
+
+<span class="hl-comment"># Standard creation</span>
+config = S3Config(
+    endpoint_url=<span class="hl-string">"https://s3.example.com"</span>,
+    bucket=<span class="hl-string">"my-bucket"</span>,
+    access_key=<span class="hl-string">"AKIAIOSFODNN7EXAMPLE"</span>,
+    secret_key=<span class="hl-string">"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"</span>,
+    region=<span class="hl-string">"us-west-2"</span>,
+)
+
+<span class="hl-comment"># Create from dictionary</span>
+config = S3Config.from_dict({
+    <span class="hl-string">"endpoint_url"</span>: <span class="hl-string">"https://s3.example.com"</span>,
+    <span class="hl-string">"bucket"</span>: <span class="hl-string">"my-bucket"</span>,
+    <span class="hl-string">"access_key"</span>: <span class="hl-string">"key"</span>,
+    <span class="hl-string">"secret_key"</span>: <span class="hl-string">"secret"</span>,
+})
+
+<span class="hl-comment"># Export to dictionary</span>
+d = config.to_dict()</code></pre>
+
+        <!-- S3Manager -->
+        <h2 id="s3manager">S3Manager</h2>
+
+        <p>High-level interface for everyday S3 operations. Automatically determines whether to use single-part or multipart upload.</p>
+
+        <h4>Constructor Parameters</h4>
+        <table>
+            <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr>
+            <tr><td><code>config</code></td><td><code>S3Config</code></td><td>—</td><td>Connection configuration</td></tr>
+            <tr><td><code>chunk_size</code></td><td><code>int</code></td><td><code>52428800</code> (50 MB)</td><td>Part size for multipart uploads</td></tr>
+            <tr><td><code>max_concurrent_uploads</code></td><td><code>int</code></td><td><code>5</code></td><td>Maximum concurrent part uploads</td></tr>
+        </table>
+
+        <h3>Upload with Progress Tracking</h3>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> UploadProgress
+
+<span class="hl-keyword">def</span> <span class="hl-func">on_progress</span>(progress: UploadProgress):
+    <span class="hl-builtin">print</span>(
+        <span class="hl-string">f"</span><span class="hl-special">{progress.key}</span><span class="hl-string">: </span><span class="hl-special">{progress.progress_percent}</span><span class="hl-string">% "
+        f"(part </span><span class="hl-special">{progress.completed_parts}</span><span class="hl-string">/</span><span class="hl-special">{progress.total_parts}</span><span class="hl-string">)"</span>
+    )
+
+info = <span class="hl-keyword">await</span> manager.upload_file(
+    <span class="hl-string">"large_video.mp4"</span>,
+    <span class="hl-string">"videos/video.mp4"</span>,
+    content_type=<span class="hl-string">"video/mp4"</span>,
+    metadata={<span class="hl-string">"author"</span>: <span class="hl-string">"user123"</span>},
+    progress_callback=on_progress,
+)</code></pre>
+
+        <h3>Listing Files</h3>
+
+        <pre><code><span class="hl-comment"># All files</span>
+<span class="hl-keyword">async for</span> f <span class="hl-keyword">in</span> manager.list_files():
+    <span class="hl-builtin">print</span>(<span class="hl-string">f"</span><span class="hl-special">{f.key}</span><span class="hl-string">: </span><span class="hl-special">{f.size_mb}</span><span class="hl-string"> MB"</span>)
+
+<span class="hl-comment"># Filtered with limit</span>
+<span class="hl-keyword">async for</span> f <span class="hl-keyword">in</span> manager.list_files(prefix=<span class="hl-string">"photos/"</span>, recursive=<span class="hl-builtin">False</span>, limit=<span class="hl-number">100</span>):
+    <span class="hl-builtin">print</span>(f.key)</code></pre>
+
+        <h3>Batch Deletion</h3>
+
+        <pre><code>keys = [<span class="hl-string">"f1.txt"</span>, <span class="hl-string">"f2.txt"</span>, <span class="hl-string">"f3.txt"</span>]
+deleted = <span class="hl-keyword">await</span> manager.delete_files(keys)
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Deleted: </span><span class="hl-special">{deleted}</span><span class="hl-string">"</span>)</code></pre>
+
+        <h3>Usage Statistics</h3>
+
+        <pre><code>stats = <span class="hl-keyword">await</span> manager.get_usage_stats()
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Files: </span><span class="hl-special">{stats.total_files}</span><span class="hl-string">"</span>)
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Total size: </span><span class="hl-special">{stats.total_size_gb}</span><span class="hl-string"> GB"</span>)
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Average size: </span><span class="hl-special">{stats.avg_file_size_mb}</span><span class="hl-string"> MB"</span>)</code></pre>
+
+        <h3>Bucket Purge</h3>
+
+        <div class="admonition danger">
+            <div class="admonition-title">Warning: irreversible operation</div>
+            Deletes all objects and aborts all incomplete multipart uploads in the bucket.
+        </div>
+
+        <pre><code>deleted = <span class="hl-keyword">await</span> manager.purge()
+<span class="hl-builtin">print</span>(<span class="hl-string">f"Deleted objects: </span><span class="hl-special">{deleted}</span><span class="hl-string">"</span>)</code></pre>
+
+        <!-- S3Client -->
+        <h2 id="s3client">S3Client</h2>
+
+        <p>Low-level client for direct S3 API operations. Provides full control over all aspects of storage interaction.</p>
+
+        <h3>Manual Multipart Upload</h3>
+
+        <pre><code><span class="hl-keyword">async with</span> S3Client(config) <span class="hl-keyword">as</span> client:
+    <span class="hl-comment"># Initialize</span>
+    upload = <span class="hl-keyword">await</span> client.create_multipart_upload(<span class="hl-string">"large.bin"</span>)
+    upload_id = upload[<span class="hl-string">"UploadId"</span>]
+
+    <span class="hl-comment"># Upload parts</span>
+    parts = []
+    <span class="hl-keyword">for</span> i, chunk <span class="hl-keyword">in</span> <span class="hl-builtin">enumerate</span>(chunks, <span class="hl-number">1</span>):
+        result = <span class="hl-keyword">await</span> client.upload_part(
+            <span class="hl-string">"large.bin"</span>, upload_id, i, chunk
+        )
+        parts.append({<span class="hl-string">"PartNumber"</span>: i, <span class="hl-string">"ETag"</span>: result[<span class="hl-string">"ETag"</span>]})
+
+    <span class="hl-comment"># Complete</span>
+    <span class="hl-keyword">await</span> client.complete_multipart_upload(<span class="hl-string">"large.bin"</span>, upload_id, parts)</code></pre>
+
+        <h3>S3Client Methods</h3>
+
+        <table>
+            <tr><th>Method</th><th>Description</th></tr>
+            <tr><td><code>head_object(key)</code></td><td>Object metadata without downloading</td></tr>
+            <tr><td><code>list_objects(prefix, delimiter, max_keys)</code></td><td>Paginated object listing (async generator)</td></tr>
+            <tr><td><code>put_object(key, body, content_type, metadata)</code></td><td>Single-operation upload</td></tr>
+            <tr><td><code>download_fileobj(key, fileobj)</code></td><td>Streaming download to a file-like object</td></tr>
+            <tr><td><code>delete_object(key)</code></td><td>Delete an object</td></tr>
+            <tr><td><code>copy_object(source_key, dest_key)</code></td><td>Copy within the same bucket</td></tr>
+            <tr><td><code>create_multipart_upload(key, ...)</code></td><td>Initialize multipart upload</td></tr>
+            <tr><td><code>upload_part(key, upload_id, part_number, body)</code></td><td>Upload a single part</td></tr>
+            <tr><td><code>complete_multipart_upload(key, upload_id, parts)</code></td><td>Complete multipart upload</td></tr>
+            <tr><td><code>abort_multipart_upload(key, upload_id)</code></td><td>Abort multipart upload</td></tr>
+        </table>
+
+        <!-- Data Models -->
+        <h2 id="fileinfo">FileInfo</h2>
+
+        <p>Contains metadata about an S3 object, retrieved via <code>head_object</code> or <code>list_objects</code>.</p>
+
+        <table>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>key</code></td><td><code>str</code></td><td>S3 object key (path)</td></tr>
+            <tr><td><code>size</code></td><td><code>int</code></td><td>File size in bytes</td></tr>
+            <tr><td><code>last_modified</code></td><td><code>datetime</code></td><td>Last modification timestamp</td></tr>
+            <tr><td><code>etag</code></td><td><code>str</code></td><td>Object ETag (without quotes)</td></tr>
+            <tr><td><code>storage_class</code></td><td><code>Optional[StorageClass]</code></td><td>Storage class</td></tr>
+            <tr><td><code>content_type</code></td><td><code>Optional[str]</code></td><td>MIME type</td></tr>
+            <tr><td><code>metadata</code></td><td><code>Dict[str, str]</code></td><td>Custom metadata</td></tr>
+        </table>
+
+        <h4>Computed Properties</h4>
+        <table>
+            <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>size_mb</code></td><td><code>float</code></td><td>Size in megabytes</td></tr>
+            <tr><td><code>size_gb</code></td><td><code>float</code></td><td>Size in gigabytes</td></tr>
+            <tr><td><code>filename</code></td><td><code>str</code></td><td>Filename (last path component)</td></tr>
+            <tr><td><code>directory</code></td><td><code>str</code></td><td>Directory path (all components except filename)</td></tr>
+        </table>
+
+        <h2 id="uploadprogress">UploadProgress</h2>
+
+        <p>Passed to <code>progress_callback</code> during file uploads.</p>
+
+        <table>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>key</code></td><td><code>str</code></td><td>Object key being uploaded</td></tr>
+            <tr><td><code>total_size</code></td><td><code>int</code></td><td>Total file size in bytes</td></tr>
+            <tr><td><code>uploaded_size</code></td><td><code>int</code></td><td>Bytes uploaded so far</td></tr>
+            <tr><td><code>completed_parts</code></td><td><code>int</code></td><td>Number of completed parts</td></tr>
+            <tr><td><code>total_parts</code></td><td><code>int</code></td><td>Total number of parts</td></tr>
+            <tr><td><code>progress_percent</code></td><td><code>float</code></td><td>Progress percentage (0.0–100.0)</td></tr>
+        </table>
+
+        <h2 id="usagestats">UsageStats</h2>
+
+        <p>Aggregated bucket usage statistics.</p>
+
+        <table>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>total_files</code></td><td><code>int</code></td><td>Total number of files</td></tr>
+            <tr><td><code>total_size_bytes</code></td><td><code>int</code></td><td>Total size in bytes</td></tr>
+            <tr><td><code>total_size_gb</code></td><td><code>float</code></td><td>Total size in GB</td></tr>
+            <tr><td><code>total_size_mb</code></td><td><code>float</code></td><td>Total size in MB</td></tr>
+            <tr><td><code>avg_file_size_mb</code></td><td><code>float</code></td><td>Average file size in MB</td></tr>
+            <tr><td><code>by_storage_class</code></td><td><code>Dict[StorageClass, int]</code></td><td>File count by storage class</td></tr>
+        </table>
+
+        <h2 id="storageclass">StorageClass</h2>
+
+        <table>
+            <tr><th>Value</th><th>Description</th></tr>
+            <tr><td><code>STANDARD</code></td><td>Standard storage — for frequently accessed data</td></tr>
+            <tr><td><code>STANDARD_IA</code></td><td>Infrequent access — for data accessed less often</td></tr>
+            <tr><td><code>GLACIER</code></td><td>Archive storage — retrieval takes minutes to hours</td></tr>
+            <tr><td><code>DEEP_ARCHIVE</code></td><td>Deep archive — lowest cost, retrieval takes hours</td></tr>
+            <tr><td><code>INTELLIGENT_TIERING</code></td><td>Automatic tier selection based on access patterns</td></tr>
+        </table>
+
+        <!-- Exceptions -->
+        <h2 id="exceptions">Exceptions</h2>
+
+        <p>All exceptions inherit from <code>S3Error</code>. Each exception has a <code>message</code> attribute and an optional <code>original_error</code> attribute with the causing exception.</p>
+
+        <table>
+            <tr><th>Exception</th><th>Parent</th><th>Raised When</th></tr>
+            <tr><td><code>S3Error</code></td><td><code>Exception</code></td><td>Base exception for all S3 errors</td></tr>
+            <tr><td><code>S3ConnectionError</code></td><td><code>S3Error</code></td><td>Failed to connect to S3 service</td></tr>
+            <tr><td><code>S3UploadError</code></td><td><code>S3Error</code></td><td>File upload failed (has <code>key</code> attribute)</td></tr>
+            <tr><td><code>S3DownloadError</code></td><td><code>S3Error</code></td><td>File download failed (has <code>key</code> attribute)</td></tr>
+            <tr><td><code>S3FileNotFoundError</code></td><td><code>S3Error</code></td><td>File not found in bucket</td></tr>
+            <tr><td><code>S3BucketNotFoundError</code></td><td><code>S3Error</code></td><td>Bucket not found</td></tr>
+            <tr><td><code>S3PermissionError</code></td><td><code>S3Error</code></td><td>Insufficient permissions</td></tr>
+            <tr><td><code>S3ConfigurationError</code></td><td><code>S3Error</code></td><td>Invalid connection configuration</td></tr>
+        </table>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> (
+    S3FileNotFoundError, S3PermissionError,
+    S3ConnectionError, S3Error,
+)
+
+<span class="hl-keyword">try</span>:
+    info = <span class="hl-keyword">await</span> manager.get_file_info(<span class="hl-string">"important.txt"</span>)
+<span class="hl-keyword">except</span> S3FileNotFoundError:
+    <span class="hl-builtin">print</span>(<span class="hl-string">"File not found"</span>)
+<span class="hl-keyword">except</span> S3PermissionError:
+    <span class="hl-builtin">print</span>(<span class="hl-string">"Access denied"</span>)
+<span class="hl-keyword">except</span> S3ConnectionError:
+    <span class="hl-builtin">print</span>(<span class="hl-string">"Connection error"</span>)
+<span class="hl-keyword">except</span> S3Error <span class="hl-keyword">as</span> e:
+    <span class="hl-builtin">print</span>(<span class="hl-string">f"Error: </span><span class="hl-special">{e.message}</span><span class="hl-string">"</span>)</code></pre>
+
+        <!-- Utilities -->
+        <h2 id="utilities">Utilities</h2>
+
+        <pre><code><span class="hl-keyword">from</span> neos3files <span class="hl-keyword">import</span> (
+    sanitize_filename,
+    parse_s3_url,
+    build_s3_url,
+    format_size,
+)
+
+<span class="hl-comment"># Filename sanitization</span>
+<span class="hl-builtin">print</span>(sanitize_filename(<span class="hl-string">"my file (1).txt"</span>))
+<span class="hl-comment"># => "my_file_1.txt"</span>
+
+<span class="hl-comment"># Parse s3:// URL</span>
+bucket, key = parse_s3_url(<span class="hl-string">"s3://my-bucket/path/file.txt"</span>)
+<span class="hl-comment"># => ("my-bucket", "path/file.txt")</span>
+
+<span class="hl-comment"># Parse HTTPS URL</span>
+bucket, key = parse_s3_url(<span class="hl-string">"https://s3.amazonaws.com/bucket/key.txt"</span>)
+<span class="hl-comment"># => ("bucket", "key.txt")</span>
+
+<span class="hl-comment"># Build URL</span>
+url = build_s3_url(<span class="hl-string">"my-bucket"</span>, <span class="hl-string">"folder/file.txt"</span>)
+<span class="hl-comment"># => "s3://my-bucket/folder/file.txt"</span>
+
+url = build_s3_url(<span class="hl-string">"my-bucket"</span>, <span class="hl-string">"f.txt"</span>, <span class="hl-string">"https://s3.example.com"</span>)
+<span class="hl-comment"># => "https://s3.example.com/my-bucket/f.txt"</span>
+
+<span class="hl-comment"># Size formatting</span>
+<span class="hl-builtin">print</span>(format_size(<span class="hl-number">1024</span>))       <span class="hl-comment"># "1.00 KB"</span>
+<span class="hl-builtin">print</span>(format_size(<span class="hl-number">1073741824</span>)) <span class="hl-comment"># "1.00 GB"</span></code></pre>
+
+        <!-- Supported Providers -->
+        <h2 id="providers">Supported Storage Providers</h2>
+
+        <p>The library works with any S3-compatible storage:</p>
+
+        <table>
+            <tr><th>Provider</th><th>Example endpoint_url</th></tr>
+            <tr><td>AWS S3</td><td><code>https://s3.amazonaws.com</code></td></tr>
+            <tr><td>MinIO</td><td><code>https://minio.example.com</code></td></tr>
+            <tr><td>DigitalOcean Spaces</td><td><code>https://nyc3.digitaloceanspaces.com</code></td></tr>
+            <tr><td>Yandex Object Storage</td><td><code>https://storage.yandexcloud.net</code></td></tr>
+            <tr><td>VK Cloud Storage</td><td><code>https://hb.bizmrg.com</code></td></tr>
+            <tr><td>Selectel Object Storage</td><td><code>https://s3.selcdn.ru</code></td></tr>
+            <tr><td>Ceph (RADOS Gateway)</td><td><code>https://ceph.example.com</code></td></tr>
+        </table>
+
+        <!-- Development -->
+        <h2 id="development">Development</h2>
+
+        <pre><code><span class="hl-comment"># Clone the repository</span>
+git clone https://github.com/NeosartDevs/NeoS3Files.git
+<span class="hl-builtin">cd</span> NeoS3Files
+
+<span class="hl-comment"># Install in development mode</span>
+pip install -e .[dev]
+
+<span class="hl-comment"># Run tests</span>
+pytest
+
+<span class="hl-comment"># Tests with coverage</span>
+pytest --cov=neos3files --cov-report=html
+
+<span class="hl-comment"># Code formatting</span>
+black neos3files tests
+
+<span class="hl-comment"># Type checking</span>
+mypy neos3files</code></pre>
+
+        <p style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--text-muted);">
+            NeoS3Files &copy; 2025 Neosart Team. MIT License.
+            <br><a href="https://github.com/NeosartDevs/NeoS3Files">GitHub</a> &middot;
+            <a href="https://pypi.org/project/neos3files/">PyPI</a> &middot;
+            <a href="https://github.com/NeosartDevs/NeoS3Files/issues">Bug Tracker</a>
+        </p>
+    </div>
+
+</main>
+
+<script>
+    function switchLang(lang) {
+        // Toggle content
+        document.querySelectorAll('.lang-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('content-' + lang).classList.add('active');
+
+        // Toggle buttons
+        document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('btn-' + lang).classList.add('active');
+
+        // Toggle sidebar labels
+        document.querySelectorAll('[data-lang-ru]').forEach(el => el.style.display = lang === 'ru' ? '' : 'none');
+        document.querySelectorAll('[data-lang-en]').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+
+        localStorage.setItem('neos3files-docs-lang', lang);
+    }
+
+    // Restore language preference
+    (function() {
+        const saved = localStorage.getItem('neos3files-docs-lang') || 'ru';
+        switchLang(saved);
+    })();
+</script>
+
+</body>
+</html>
