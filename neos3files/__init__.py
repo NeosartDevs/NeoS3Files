@@ -17,7 +17,7 @@ from .manager import S3Manager
 from .client import S3Client
 from .utils import sanitize_filename, parse_s3_url, build_s3_url, format_size
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Neosart Team"
 __license__ = "MIT"
 
