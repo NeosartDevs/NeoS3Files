@@ -387,9 +387,6 @@ print(format_size(0))           # "0 B"
 git clone https://github.com/NeosartDevs/NeoS3Files.git
 cd NeoS3Files
 
-# Установка зависимостей для разработки
-pip install -e .[dev]
-
 # Запуск тестов
 pytest
 
