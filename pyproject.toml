@@ -67,6 +67,9 @@ Documentation = "https://github.com/NeosartDevs/NeoS3Files#readme"
 Repository = "https://github.com/NeosartDevs/NeoS3Files.git"
 "Bug Tracker" = "https://github.com/NeosartDevs/NeoS3Files/issues"
 
+[tool.setuptools]
+license-files = ["LICENSE"]
+
 # --- setuptools configuration ---
 [tool.setuptools.packages.find]
 where = ["."]
