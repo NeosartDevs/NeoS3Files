@@ -388,9 +388,6 @@ The library works with any S3-compatible storage:
 git clone https://github.com/NeosartDevs/NeoS3Files.git
 cd NeoS3Files
 
-# Install development dependencies
-pip install -e .[dev]
-
 # Run tests
 pytest
 
